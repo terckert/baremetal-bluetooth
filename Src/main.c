@@ -17,6 +17,7 @@
  */
 
 #include "stm32f4xx.h"
+#include "debug_uart_driver.h"
 #include <stdint.h>
 
 #define GPIOA_ENABLE 		(1U << 0)
@@ -34,6 +35,7 @@ int main(void)
 	GPIOA->MODER |=  (1U << 10);
 	GPIOA->MODER &= ~(1U << 11);
 
+	debug_uart_init();
 
 	/* Loop forever */
 	while (1) {
