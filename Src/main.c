@@ -37,7 +37,7 @@ int main(void)
 
 	/* Loop forever */
 	while (1) {
-		GPIOA->ODR ^= LED2_PIN;
+		GPIOA->ODR ^= LED2_PIN; // git commit test
 		for (int i = 0; i < 200000; i++) { ; }
 	}
 }
