@@ -39,14 +39,16 @@
 
 // UART information
 #define UART_DATA_REG		USART2->DR		// USART register
-#define UART_ENABLE_REG		USART2->CR1 	// Register that has control bit
+#define UART_ENABLE_REG		USART2->CR1 	// USART register containing enable/disable flags
 #define UART_BRR_REG		USART2->BRR		// USART BRR register
+#define UART_STATUS_REG		USART2->SR		// USART status flags register
 #define UART_ENABLE_BIT		(1U << 13)  	// USART enable/disable bit
 #define UART_REC_EN			(1U << 2)		// USART receive enable bit
 #define UART_TRANS_EN		(1U << 3)		// USART transmit enable bit
+#define UART_TRANS_RDY		(1U << 7)		// USART transmit ready flag
 
 #define SYSTEM_FREQ			16000000U		// System frequency is 16Mhz
-#define UART_BAUDRATE		9600U			// Baud rate we want to set
+#define UART_BAUDRATE		115200U			// Baud rate we want to set
 
 #define USART_INTERRUPT		USART2_IRQn		// Found in the header file of your board
 
@@ -81,12 +83,31 @@ void debug_uart_init(void) {
 	UART_ENABLE_REG |= UART_ENABLE_BIT;		// Re-enable the interrupt handler
 }
 
-void debug_uart_transmit(void) {
 
+
+/*
+ * debug_uart_transmit
+ *
+ * Transmits a character through the UART
+ *
+ * parameters:
+ * 		ch: character to be transmitted
+ */
+void debug_uart_transmit(uint8_t ch) {
+	// Block until the transmission ready flag is set
+	while (!(UART_STATUS_REG & UART_TRANS_RDY)) { ; }
+	UART_DATA_REG = ch;
+}
+
+int __io_putchar(int ch){
+	debug_uart_transmit((ch & 0xff)); // Guarantees the int passed is only 8 bits
+	return ch;
 }
 
 /*
  * compute_uart_baudrate
+ *
+ * Calculates the value to be placed in the BRR register to achieve the desired baudrate
  *
  * parameters:
  * 		periph_clk: default clock rate of the peripheral

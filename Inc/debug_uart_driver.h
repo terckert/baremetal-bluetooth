@@ -17,7 +17,7 @@
 
 
 void debug_uart_init(void);
-void debug_uart_write(void);
+void debug_uart_transmit(uint8_t ch);
 
 
 #ifdef __cplusplus

@@ -19,6 +19,7 @@
 #include "stm32f4xx.h"
 #include "debug_uart_driver.h"
 #include <stdint.h>
+#include <stdio.h>
 
 #define GPIOA_ENABLE 		(1U << 0)
 #define LED2_PIN 			(1U << 5)
@@ -27,10 +28,24 @@
   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
 #endif
 
+#ifdef DEBUG
+#define DEBUG_PRINT 		printf
+#else
+#define DEBUG_PRINT(...)
+#endif
+
 int main(void)
 {
 
 	debug_uart_init();
+#ifdef DEBUG
+	uint8_t count = 0;
+#endif
 
-	for(;;);
+	while(1){
+		for(int i = 0; i < 2000000; i++) {
+			;
+		}
+		DEBUG_PRINT("HELLO FROM DEBUGGER! Ran %d times!\r\n", ++count);
+	}
 }
