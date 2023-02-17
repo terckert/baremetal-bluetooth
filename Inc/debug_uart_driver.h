@@ -9,6 +9,7 @@
 #define DEBUG_UART_DRIVER_H_
 
 #include "stm32f4xx.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
  extern "C" {
