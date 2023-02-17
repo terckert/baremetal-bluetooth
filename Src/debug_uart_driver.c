@@ -99,6 +99,15 @@ void debug_uart_transmit(uint8_t ch) {
 	UART_DATA_REG = ch;
 }
 
+/*
+ * __io_putchar
+ *
+ * Overwrites the putchar function allowing the custom transmit function to work with
+ * printf
+ *
+ * parameters:
+ * 		char: character to be trasnmitted
+ */
 int __io_putchar(int ch){
 	debug_uart_transmit((ch & 0xff)); // Guarantees the int passed is only 8 bits
 	return ch;
