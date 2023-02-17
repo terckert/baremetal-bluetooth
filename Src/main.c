@@ -29,17 +29,8 @@
 
 int main(void)
 {
-	RCC->AHB1ENR |= GPIOA_ENABLE;
-
-	// LED2 is pin PA_5
-	GPIOA->MODER |=  (1U << 10);
-	GPIOA->MODER &= ~(1U << 11);
 
 	debug_uart_init();
 
-	/* Loop forever */
-	while (1) {
-		GPIOA->ODR ^= LED2_PIN; // git commit test
-		for (int i = 0; i < 200000; i++) { ; }
-	}
+	for(;;);
 }
