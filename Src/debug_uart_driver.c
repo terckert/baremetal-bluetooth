@@ -40,9 +40,17 @@
 // UART information
 #define UART_DATA_REG		USART2->DR		// USART register
 #define UART_ENABLE_REG		USART2->CR1 	// Register that has control bit
+#define UART_BRR_REG		USART2->BRR		// USART BRR register
 #define UART_ENABLE_BIT		(1U << 13)  	// USART enable/disable bit
+#define UART_REC_EN			(1U << 2)		// USART receive enable bit
+#define UART_TRANS_EN		(1U << 3)		// USART transmit enable bit
 
-static uint_16t compute_uart_baudrate(uint32_t periph_clk, uint32_t baudrate);
+#define SYSTEM_FREQ			16000000U		// System frequency is 16Mhz
+#define UART_BAUDRATE		9600U			// Baud rate we want to set
+
+#define USART_INTERRUPT		USART2_IRQn		// Found in the header file of your board
+
+static uint16_t compute_uart_baudrate(uint32_t periph_clk, uint32_t baudrate);
 
 void debug_uart_init(void) {
 
@@ -63,6 +71,17 @@ void debug_uart_init(void) {
 
 	UART_CLOCK_REG |= UART_CLOCK_EN; 		// Enable clock to the UART
 	UART_ENABLE_REG &= ~UART_ENABLE_BIT;	// Disable the UART for configuration
+	UART_ENABLE_REG |= (UART_REC_EN | UART_TRANS_EN); // Enable transmission and/or receiving for USART
+
+	// Set the baud rate of the board.
+	UART_BRR_REG = compute_uart_baudrate(SYSTEM_FREQ, UART_BAUDRATE);
+
+	NVIC_EnableIRQ(USART_INTERRUPT);		// Enable the interrupt handler
+
+	UART_ENABLE_REG |= UART_ENABLE_BIT;		// Re-enable the interrupt handler
+}
+
+void debug_uart_transmit(void) {
 
 }
 
@@ -73,7 +92,7 @@ void debug_uart_init(void) {
  * 		periph_clk: default clock rate of the peripheral
  * 		baudrate: desired baud rate
  */
-static uint_16t compute_uart_baudrate(uint32_t periph_clk, uint32_t baudrate){
+static uint16_t compute_uart_baudrate(uint32_t periph_clk, uint32_t baudrate){
 	return ((periph_clk + (baudrate/2U))/baudrate);
 }
 
