@@ -18,8 +18,11 @@
 
 #include "stm32f4xx.h"
 #include "debug_uart_driver.h"
+#include "bluetooth_slave_driver.h"
+#include "systick_delays.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #define GPIOA_ENABLE 		(1U << 0)
 #define LED2_PIN 			(1U << 5)
@@ -34,12 +37,26 @@
 #define DEBUG_PRINT(...)
 #endif
 
-
+#define MAXSTRLEN 256
 
 int main(void)
 {
 
 	debug_uart_init();
+	bt_uart_init(_normal);
+
+	char c[MAXSTRLEN];
+	int cInd = 0;
+	memset(c, 0, MAXSTRLEN);
+
+	bt_transmit_single_character('A');
+	bt_transmit_single_character('T');
+
+	while (USART1->SR & (1U << 5)) {
+		c[cInd++] = (USART1->DR & 0xff);
+	}
+
+	printf("STR VALUE: %s\r\n",c);
 
 	// Clock to GPIO A, B, C
 	RCC->AHB1ENR |=  (1U << 0 | 1U << 1 | 1U << 2);
@@ -56,25 +73,25 @@ int main(void)
 	GPIOC->MODER |=  (1U << 0 | 1U << 2);
 	GPIOC->MODER &= ~(1U << 1 | 1U << 3);
 
-	int timer = 150000;
-
+	int delay = 500;
 	while(1){
 		// Order of lights to initialize, each should stay on for two cycles.
 
 		GPIOC->ODR |=  (1U << 0); // PC0 on
 		GPIOA->ODR &= ~(1U << 4); // PA4 off
-		for (int i = 0; i < timer; i++) { ; } // Delay
+		systick_delay_ms(delay);
 
 		GPIOC->ODR |=  (1U << 1); // PC1 on
 		GPIOC->ODR &= ~(1U << 0); // PC0 off
-		for (int i = 0; i < timer; i++) { ; } // Delay
+		systick_delay_ms(delay);
 
 		GPIOB->ODR |=  (1U << 0); // PB0 on
 		GPIOC->ODR &= ~(1U << 1); // PC1 off
-		for (int i = 0; i < timer; i++) { ; } // Delay
+		systick_delay_ms(delay);
 
 		GPIOA->ODR |=  (1U << 4); // PA4 on
 		GPIOB->ODR &= ~(1U << 0); // PB0 off
-		for (int i = 0; i < timer; i++) { ; } // Delay
+		systick_delay_ms(delay);
+
 	}
 }

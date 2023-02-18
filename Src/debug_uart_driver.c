@@ -15,23 +15,23 @@
 // GPIO clock information
 #define GPIO_CLOCK_REG		RCC->AHB1ENR 	// GPIO clock register: RCC->'x'
 
-// TX pin information
+// TX pin information (PA2)
 #define TX_MODER_REG		GPIOA->MODER  	// MODER register for TX pin
 #define TX_ALT_FUNC_REG		GPIOA->AFR[0] 	// Alternate function register for TX pin
 #define TX_CLOCK_EN			(1U << 0)		// Clock enable bit for TX pin
 #define TX_MODER_1_BITS		(1U << 5)		// 1 bits in the MODER code for alternate function
 #define TX_MODER_0_BITS		(1U << 4)		// 0 bits in the MODER code for alternate function
-#define AFR_TX_1_BITS		(7U << 8)		// The one bits in the alternate function code
-#define AFR_TX_0_BITS		(8U << 8)		// The zero bits in the alternate function code
+#define AFR_TX_1_BITS		(7U << 8)		// 1 bits in the alternate function code
+#define AFR_TX_0_BITS		(8U << 8)		// 0 bits in the alternate function code
 
-// RX pin information
+// RX pin information (PA3)
 #define RX_MODER_REG		GPIOA->MODER	// RX pin register
 #define RX_ALT_FUNC_REG		GPIOA->AFR[0]	// Alternate function register for RX pin
 #define RX_CLOCK_EN			(1U << 0)		// Clock enable bit for RX pin
 #define RX_MODER_1_BITS		(1U << 7)		// 1 bits in the MODER code for alternate function
 #define RX_MODER_0_BITS		(1U << 6)		// 0 bits in the MODER code for alternate function
-#define AFR_RX_1_BITS		(7U << 12)		// The one bits in the alternate function code
-#define AFR_RX_0_BITS		(8U << 12)		// The zero bits in the alternate function code
+#define AFR_RX_1_BITS		(7U << 12)		// 1 bits in the alternate function code
+#define AFR_RX_0_BITS		(8U << 12)		// 0 bits in the alternate function code
 
 // UART clock information
 #define UART_CLOCK_REG		RCC->APB1ENR	// UART clock register: RCC->'x'
