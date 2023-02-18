@@ -34,18 +34,47 @@
 #define DEBUG_PRINT(...)
 #endif
 
+
+
 int main(void)
 {
 
 	debug_uart_init();
-#ifdef DEBUG
-	uint8_t count = 0;
-#endif
+
+	// Clock to GPIO A, B, C
+	RCC->AHB1ENR |=  (1U << 0 | 1U << 1 | 1U << 2);
+
+	// Pin PA4 to output
+	GPIOA->MODER |=  (1U << 8);
+	GPIOA->MODER &= ~(1U << 9);
+
+	// Pin PB0 to output
+	GPIOB->MODER |=  (1U << 0);
+	GPIOB->MODER &= ~(1U << 1);
+
+	// Pins PC0, PC1 to output
+	GPIOC->MODER |=  (1U << 0 | 1U << 2);
+	GPIOC->MODER &= ~(1U << 1 | 1U << 3);
+
+	int timer = 150000;
 
 	while(1){
-		for(int i = 0; i < 2000000; i++) {
-			;
-		}
-		DEBUG_PRINT("HELLO FROM DEBUGGER! Ran %d times!\r\n", ++count);
+		// Order of lights to initialize, each should stay on for two cycles.
+
+		GPIOC->ODR |=  (1U << 0); // PC0 on
+		GPIOA->ODR &= ~(1U << 4); // PA4 off
+		for (int i = 0; i < timer; i++) { ; } // Delay
+
+		GPIOC->ODR |=  (1U << 1); // PC1 on
+		GPIOC->ODR &= ~(1U << 0); // PC0 off
+		for (int i = 0; i < timer; i++) { ; } // Delay
+
+		GPIOB->ODR |=  (1U << 0); // PB0 on
+		GPIOC->ODR &= ~(1U << 1); // PC1 off
+		for (int i = 0; i < timer; i++) { ; } // Delay
+
+		GPIOA->ODR |=  (1U << 4); // PA4 on
+		GPIOB->ODR &= ~(1U << 0); // PB0 off
+		for (int i = 0; i < timer; i++) { ; } // Delay
 	}
 }
