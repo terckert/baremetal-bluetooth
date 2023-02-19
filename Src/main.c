@@ -20,6 +20,7 @@
 #include "debug_uart_driver.h"
 #include "bluetooth_slave_driver.h"
 #include "systick_delays.h"
+#include "circular_buffer.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,19 +46,19 @@ int main(void)
 	debug_uart_init();
 	bt_uart_init(_normal);
 
+	c_buffer test = c_buff_init();
 
-	char c[MAXSTRLEN];
-	int cInd = 0;
-	memset(c, 0, MAXSTRLEN);
+	printf("Before insertion circular buffer is emtpy returns: %d\n\r", c_buff_is_empty(test));
 
-	bt_transmit_single_character('A');
-	bt_transmit_single_character('T');
+	for (int i = 0; i < CIRCULAR_BUFFER_SIZE + 1; i ++) {
+		int res = c_buff_push(test, 'a');
+		if (res == CBUF_PUSH_OVERFLOW) {
+			printf("Received overflow message on insertion: %d\n\r", i);
+		}
 
-	while (USART1->SR & (1U << 5)) {
-		c[cInd++] = (USART1->DR & 0xff);
 	}
 
-	printf("STR VALUE: %s\r\n",c);
+	printf("Before insertion circular buffer is emtpy returns: %d\n\r", c_buff_is_empty(test));
 
 	// Clock to GPIO A, B, C
 	RCC->AHB1ENR |=  (1U << 0 | 1U << 1 | 1U << 2);

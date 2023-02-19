@@ -35,8 +35,8 @@
 struct Circular_Buffer;
 
 void* c_buff_init();
-uint8_t c_buffer_push(c_buffer b, uint8_t ch);
-char c_buffer_pop(c_buffer b);
+uint8_t c_buff_push(c_buffer b, uint8_t ch);
+char c_buff_pop(c_buffer b);
 int c_buff_is_empty(c_buffer b);
 
 

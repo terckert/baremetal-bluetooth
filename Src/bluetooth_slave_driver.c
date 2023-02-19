@@ -134,7 +134,7 @@ static uint16_t compute_uart_baudrate(uint32_t periph_clk, uint32_t baudrate){
 }
 
 void store_received_character() {
-	c_buffer_push(rx_buff, (UART_DATA_REG & 0xff));
+	c_buff_push(rx_buff, (UART_DATA_REG & 0xff));
 }
 
 

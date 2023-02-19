@@ -22,14 +22,14 @@ void* c_buff_init() {
 	return calloc(sizeof(struct Circular_Buffer), 1);
 }
 
-uint8_t c_buffer_push(c_buffer b, uint8_t ch) {
+uint8_t c_buff_push(c_buffer b, uint8_t ch) {
 	b->_c_buffer[b->head] = ch;
 	b->head = (b->head + 1) % CIRCULAR_BUFFER_SIZE;
 	return (b->head != b->tail) ? CBUF_PUSH_OK : CBUF_PUSH_OVERFLOW;
 }
 
 
-char c_buffer_pop(c_buffer b) {
+char c_buff_pop(c_buffer b) {
 	if (b->head == b->tail) return CBU_POP_FAILED;
 	char ret = b->_c_buffer[b->tail];
 	b->tail = (b->tail + 1) % CIRCULAR_BUFFER_SIZE;
