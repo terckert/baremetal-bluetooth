@@ -2,10 +2,15 @@
  * systick_delays.c
  *
  *  Created on: Feb 18, 2023
- *      Author: spyste
+ *      Author: T. Erckert
  */
 
 #include "systick_delays.h"
+
+
+#ifdef __cplusplus
+ extern "C" {
+#endif /* __cplusplus */
 
 // SysTick information
 #define ST_SYSTEM_FREQ		16000000U		// External clock value
@@ -98,3 +103,6 @@ void systick_delay_s(uint32_t delay){
 	ST_CTRL_REG = 0;						// Reset the clock
 }
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */

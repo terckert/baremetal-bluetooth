@@ -22,6 +22,7 @@
 #include "systick_delays.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define GPIOA_ENABLE 		(1U << 0)
@@ -41,9 +42,9 @@
 
 int main(void)
 {
-
 	debug_uart_init();
 	bt_uart_init(_normal);
+
 
 	char c[MAXSTRLEN];
 	int cInd = 0;

@@ -9,6 +9,7 @@
 #define BLUETOOTH_SLAVE_DRIVER_H_
 
 #include "stm32f4xx.h"
+#include "circular_buffer.h"
 #include <stdint.h>
 
 #ifdef __cplusplus

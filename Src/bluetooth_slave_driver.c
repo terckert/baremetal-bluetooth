@@ -46,6 +46,7 @@
 #define UART_REC_EN			(1U << 2)		// USART receive enable bit
 #define UART_TRANS_EN		(1U << 3)		// USART transmit enable bit
 #define UART_TRANS_RDY		(1U << 7)		// USART transmit ready flag
+#define UART_INT_EN			(1U << 5)		// USART enable receive interrupt bit
 
 #define SYSTEM_FREQ			16000000U		// System frequency is 16Mhz
 #define UART_BAUDRATE		9600U			// Baud rate we want to set
@@ -53,8 +54,21 @@
 #define USART_INTERRUPT		USART1_IRQn		// Found in the header file of your board
 
 
-static uint16_t compute_uart_baudrate(uint32_t periph_clk, uint32_t baudrate);
+static c_buffer tx_buff;
+static c_buffer rx_buff;
 
+static uint16_t compute_uart_baudrate(uint32_t periph_clk, uint32_t baudrate);
+static void store_received_character(void);
+
+
+/*
+ * bt_uart_init
+ *
+ * Initializes the UART and it's internal buffers.
+ *
+ * parameters:
+ * 		setup: unused
+ */
 void bt_uart_init(BT_Setup setup) {
 
 	GPIO_CLOCK_REG |= TX_CLOCK_EN;			// Enable clock to the TX pin
@@ -74,6 +88,8 @@ void bt_uart_init(BT_Setup setup) {
 
 	UART_CLOCK_REG |= UART_CLOCK_EN; 		// Enable clock to the UART
 	UART_ENABLE_REG &= ~UART_ENABLE_BIT;	// Disable the UART for configuration
+
+	// Enable the transmission and reception of data. Enable interrupt on data received.
 	UART_ENABLE_REG |= (UART_REC_EN | UART_TRANS_EN); // Enable transmission and/or receiving for USART
 
 	// Set the baud rate of the board.
@@ -82,6 +98,9 @@ void bt_uart_init(BT_Setup setup) {
 	NVIC_EnableIRQ(USART_INTERRUPT);		// Enable the interrupt handler
 
 	UART_ENABLE_REG |= UART_ENABLE_BIT;		// Re-enable the interrupt handler
+
+	tx_buff = c_buff_init();
+	rx_buff = c_buff_init();
 }
 
 
@@ -113,6 +132,11 @@ void bt_transmit_single_character(uint32_t ch) {
 static uint16_t compute_uart_baudrate(uint32_t periph_clk, uint32_t baudrate){
 	return ((periph_clk + (baudrate/2U))/baudrate);
 }
+
+void store_received_character() {
+	c_buffer_push(rx_buff, (UART_DATA_REG & 0xff));
+}
+
 
 #ifdef __cplusplus
 }
