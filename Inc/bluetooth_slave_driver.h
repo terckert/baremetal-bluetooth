@@ -22,6 +22,9 @@ typedef enum bt_setup{
 } BT_Setup;
 
 
+extern c_buffer bt_tx_buff;
+extern c_buffer bt_rx_buff;
+
 void bt_uart_init(BT_Setup setup_mode);
 void bt_transmit_single_character(uint32_t ch);
 

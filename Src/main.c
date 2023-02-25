@@ -41,59 +41,86 @@
 
 #define MAXSTRLEN 256
 
-int main(void)
-{
+void forward_user_input(char ch);
+
+int main(){
 	debug_uart_init();
 	bt_uart_init(_normal);
 
-	c_buffer test = c_buff_init();
-
-	printf("Before insertion circular buffer is emtpy returns: %d\n\r", c_buff_is_empty(test));
-
-	for (int i = 0; i < CIRCULAR_BUFFER_SIZE + 1; i ++) {
-		int res = c_buff_push(test, 'a');
-		if (res == CBUF_PUSH_OVERFLOW) {
-			printf("Received overflow message on insertion: %d\n\r", i);
+	char console_in_buffer[CIRCULAR_BUFFER_SIZE];
+	// Main loop.
+	while (1){
+		while (c_buff_is_empty(bt_tx_buff) == CBUF_NOT_EMPTY) {
+			bt_transmit_single_character(c_buff_pop(bt_tx_buff));
 		}
 
 	}
+}
 
-	printf("Before insertion circular buffer is emtpy returns: %d\n\r", c_buff_is_empty(test));
 
-	// Clock to GPIO A, B, C
-	RCC->AHB1ENR |=  (1U << 0 | 1U << 1 | 1U << 2);
+//// For function testing
+//int main(void)
+//{
+//	debug_uart_init();
+//	bt_uart_init(_normal);
+//
+//	c_buffer test = c_buff_init();
+//
+//	// Test that c_buff_is_empty works when first initialized.
+//	DEBUG_PRINT("Before insertion c_buff_is_empty returns: %d\r\n", c_buff_is_empty(test));
+//
+//	for (int i = 0; i < CIRCULAR_BUFFER_SIZE; i ++) {
+//		int res = c_buff_push(test, 'a');
+//		if (res == CBUF_PUSH_OVERFLOW) {
+//			DEBUG_PRINT("Received overflow message on insertion: %d\r\n", i);
+//		}
+//
+//	}
+//
+//
+//
+//	DEBUG_PRINT("After insertion c_buff_is_empty returns: %d\r\n", c_buff_is_empty(test));
+//
+//	// Clock to GPIO A, B, C
+//	RCC->AHB1ENR |=  (1U << 0 | 1U << 1 | 1U << 2);
+//
+//	// Pin PA4 to output
+//	GPIOA->MODER |=  (1U << 8);
+//	GPIOA->MODER &= ~(1U << 9);
+//
+//	// Pin PB0 to output
+//	GPIOB->MODER |=  (1U << 0);
+//	GPIOB->MODER &= ~(1U << 1);
+//
+//	// Pins PC0, PC1 to output
+//	GPIOC->MODER |=  (1U << 0 | 1U << 2);
+//	GPIOC->MODER &= ~(1U << 1 | 1U << 3);
+//
+//	int delay = 500;
+//	while(1){
+//		// Order of lights to initialize, each should stay on for two cycles.
+//
+//		GPIOC->ODR |=  (1U << 0); // PC0 on
+//		GPIOA->ODR &= ~(1U << 4); // PA4 off
+//		systick_delay_ms(delay);
+//
+//		GPIOC->ODR |=  (1U << 1); // PC1 on
+//		GPIOC->ODR &= ~(1U << 0); // PC0 off
+//		systick_delay_ms(delay);
+//
+//		GPIOB->ODR |=  (1U << 0); // PB0 on
+//		GPIOC->ODR &= ~(1U << 1); // PC1 off
+//		systick_delay_ms(delay);
+//
+//		GPIOA->ODR |=  (1U << 4); // PA4 on
+//		GPIOB->ODR &= ~(1U << 0); // PB0 off
+//		systick_delay_ms(delay);
+//
+//	}
+//}
 
-	// Pin PA4 to output
-	GPIOA->MODER |=  (1U << 8);
-	GPIOA->MODER &= ~(1U << 9);
 
-	// Pin PB0 to output
-	GPIOB->MODER |=  (1U << 0);
-	GPIOB->MODER &= ~(1U << 1);
-
-	// Pins PC0, PC1 to output
-	GPIOC->MODER |=  (1U << 0 | 1U << 2);
-	GPIOC->MODER &= ~(1U << 1 | 1U << 3);
-
-	int delay = 500;
-	while(1){
-		// Order of lights to initialize, each should stay on for two cycles.
-
-		GPIOC->ODR |=  (1U << 0); // PC0 on
-		GPIOA->ODR &= ~(1U << 4); // PA4 off
-		systick_delay_ms(delay);
-
-		GPIOC->ODR |=  (1U << 1); // PC1 on
-		GPIOC->ODR &= ~(1U << 0); // PC0 off
-		systick_delay_ms(delay);
-
-		GPIOB->ODR |=  (1U << 0); // PB0 on
-		GPIOC->ODR &= ~(1U << 1); // PC1 off
-		systick_delay_ms(delay);
-
-		GPIOA->ODR |=  (1U << 4); // PA4 on
-		GPIOB->ODR &= ~(1U << 0); // PB0 off
-		systick_delay_ms(delay);
-
-	}
+void forward_user_input(char ch) {
+	if (ch != '\r')
+		c_buff_push(bt_tx_buff, ch);
 }
