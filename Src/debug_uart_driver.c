@@ -44,13 +44,19 @@
 #define UART_STATUS_REG		USART2->SR		// USART status flags register
 #define UART_ENABLE_BIT		(1U << 13)  	// USART enable/disable bit
 #define UART_REC_EN			(1U << 2)		// USART receive enable bit
+#define UART_RX_INT_FLAG	(1U << 5)		// USART receive interrupt flag
 #define UART_TRANS_EN		(1U << 3)		// USART transmit enable bit
-#define UART_TRANS_RDY		(1U << 7)		// USART transmit ready flag
+#define UART_TRANS_RDY		(1U << 7)		// USART transmit interrupt flag
+#define UART_TX_INT_FLAG	(1U << 7)		// USART transmit interrupt flag
+#define UART_INT_FUN		USART2_IRQHandler // USART interrupt name in .s file
 
 #define SYSTEM_FREQ			16000000U		// System frequency is 16Mhz
 #define UART_BAUDRATE		115200U			// Baud rate we want to set
 
 #define USART_INTERRUPT		USART2_IRQn		// Found in the header file of your board
+
+
+c_buffer debug_rx_buffer;
 
 static uint16_t compute_uart_baudrate(uint32_t periph_clk, uint32_t baudrate);
 
@@ -74,6 +80,7 @@ void debug_uart_init(void) {
 	UART_CLOCK_REG |= UART_CLOCK_EN; 		// Enable clock to the UART
 	UART_ENABLE_REG &= ~UART_ENABLE_BIT;	// Disable the UART for configuration
 	UART_ENABLE_REG |= (UART_REC_EN | UART_TRANS_EN); // Enable transmission and/or receiving for USART
+	UART_ENABLE_REG |= UART_RX_INT_FLAG;	// Enable the receive interrupt flag
 
 	// Set the baud rate of the board.
 	UART_BRR_REG = compute_uart_baudrate(SYSTEM_FREQ, UART_BAUDRATE);
@@ -81,6 +88,8 @@ void debug_uart_init(void) {
 	NVIC_EnableIRQ(USART_INTERRUPT);		// Enable the interrupt handler
 
 	UART_ENABLE_REG |= UART_ENABLE_BIT;		// Re-enable the interrupt handler
+
+	debug_rx_buffer = c_buff_init();
 }
 
 
@@ -112,6 +121,23 @@ int __io_putchar(int ch){
 	debug_uart_transmit((ch & 0xff)); // Guarantees the int passed is only 8 bits
 	return ch;
 }
+
+void UART_INT_FUN(void) {
+	char read = UART_DATA_REG;
+	c_buff_push(debug_rx_buffer, read);
+	forward_user_input(read);
+	if (read != '\r') {
+		debug_uart_transmit(read);
+	} else {
+		debug_uart_transmit('\n');
+		debug_uart_transmit('\r');
+	}
+}
+
+//__attribute__((weak)) void forward_user_input(char ch){
+//	return;
+//}
+
 
 /*
  * compute_uart_baudrate

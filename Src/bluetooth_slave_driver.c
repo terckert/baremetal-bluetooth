@@ -44,9 +44,11 @@
 #define UART_STATUS_REG		USART1->SR		// USART status flags register
 #define UART_ENABLE_BIT		(1U << 13)  	// USART enable/disable bit
 #define UART_REC_EN			(1U << 2)		// USART receive enable bit
+#define UART_RX_INT_FLAG	(1U << 5)		// USART receive interrupt flag
 #define UART_TRANS_EN		(1U << 3)		// USART transmit enable bit
 #define UART_TRANS_RDY		(1U << 7)		// USART transmit ready flag
-#define UART_INT_EN			(1U << 5)		// USART enable receive interrupt bit
+#define UART_TX_INT_FLAG	(1U << 7)		// USART transmit interrupt flag
+#define UART_INT_FUN		USART1_IRQHandler // USART interrupt name in .s file
 
 #define SYSTEM_FREQ			16000000U		// System frequency is 16Mhz
 #define UART_BAUDRATE		9600U			// Baud rate we want to set
@@ -54,8 +56,8 @@
 #define USART_INTERRUPT		USART1_IRQn		// Found in the header file of your board
 
 
-static c_buffer tx_buff;
-static c_buffer rx_buff;
+c_buffer bt_tx_buff;
+c_buffer bt_rx_buff;
 
 static uint16_t compute_uart_baudrate(uint32_t periph_clk, uint32_t baudrate);
 static void store_received_character(void);
@@ -88,9 +90,8 @@ void bt_uart_init(BT_Setup setup) {
 
 	UART_CLOCK_REG |= UART_CLOCK_EN; 		// Enable clock to the UART
 	UART_ENABLE_REG &= ~UART_ENABLE_BIT;	// Disable the UART for configuration
-
-	// Enable the transmission and reception of data. Enable interrupt on data received.
 	UART_ENABLE_REG |= (UART_REC_EN | UART_TRANS_EN); // Enable transmission and/or receiving for USART
+	UART_ENABLE_REG |= UART_RX_INT_FLAG;	// Enable interrupt on data reception
 
 	// Set the baud rate of the board.
 	UART_BRR_REG = compute_uart_baudrate(SYSTEM_FREQ, UART_BAUDRATE);
@@ -99,8 +100,8 @@ void bt_uart_init(BT_Setup setup) {
 
 	UART_ENABLE_REG |= UART_ENABLE_BIT;		// Re-enable the interrupt handler
 
-	tx_buff = c_buff_init();
-	rx_buff = c_buff_init();
+	bt_tx_buff = c_buff_init();
+	bt_rx_buff = c_buff_init();
 }
 
 
@@ -134,9 +135,13 @@ static uint16_t compute_uart_baudrate(uint32_t periph_clk, uint32_t baudrate){
 }
 
 void store_received_character() {
-	c_buff_push(rx_buff, (UART_DATA_REG & 0xff));
+	c_buff_push(bt_rx_buff, (UART_DATA_REG & 0xff));
 }
 
+void UART_INT_FUN(void) {
+	char read = UART_DATA_REG;
+	c_buff_push(bt_rx_buff, read);
+}
 
 #ifdef __cplusplus
 }
