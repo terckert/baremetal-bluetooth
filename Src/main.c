@@ -66,6 +66,7 @@ int main(){
 
 	char console_in_buffer[CIRCULAR_BUFFER_SIZE];
 	char cmd[CIRCULAR_BUFFER_SIZE];
+	memcpy(cmd, 0, CIRCULARBUFFERSIZE);
 	// Main loop.
 	while (1){
 		// BOARD LIGHT ORDER STARTING ON LEFT
@@ -97,7 +98,7 @@ int main(){
 			} else {
 				bt_transmit_string("Bad command.");
 			}
-
+			memcpy(cmd, 0, CIRCULARBUFFERSIZE);
 		}
 	}
 }
