@@ -44,6 +44,7 @@
 #define UART_STATUS_REG		USART1->SR		// USART status flags register
 #define UART_ENABLE_BIT		(1U << 13)  	// USART enable/disable bit
 #define UART_REC_EN			(1U << 2)		// USART receive enable bit
+#define UART_REC_FLAG		(1U << 5)		// USART receive ready bit (RXNE)
 #define UART_RX_INT_FLAG	(1U << 5)		// USART receive interrupt flag
 #define UART_TRANS_EN		(1U << 3)		// USART transmit enable bit
 #define UART_TRANS_RDY		(1U << 7)		// USART transmit ready flag
@@ -54,10 +55,13 @@
 #define UART_BAUDRATE		9600U			// Baud rate we want to set
 
 #define USART_INTERRUPT		USART1_IRQn		// Found in the header file of your board
-
-
-c_buffer bt_tx_buff;
-c_buffer bt_rx_buff;
+#define UART_RECEIVE_DELAY  0			// Microsecond delay between reading characters when receive interrupt flag is
+ 	 	 	 	 	 	 	 	 	 	 	// thrown. This is needed because processor is faster than flag. Used
+ 	 	 	 	 	 	 	 	 	 	    // with console debugging. Based on 1/BAUDRATE
+c_buffer bt_tx_buff;			// tx pin circular buffer
+c_buffer bt_rx_buff;			// rx pin circular buffer
+uint8_t bt_transfer_ready;		// bool, 1 - data ready, 0 - no data
+uint8_t bt_data_received;		// bool, 1 - data ready, 0 - no data
 
 static uint16_t compute_uart_baudrate(uint32_t periph_clk, uint32_t baudrate);
 static void store_received_character(void);
@@ -102,6 +106,9 @@ void bt_uart_init(BT_Setup setup) {
 
 	bt_tx_buff = c_buff_init();
 	bt_rx_buff = c_buff_init();
+
+	bt_transfer_ready = 0;
+	bt_data_received = 0;
 }
 
 
@@ -134,13 +141,32 @@ static uint16_t compute_uart_baudrate(uint32_t periph_clk, uint32_t baudrate){
 	return ((periph_clk + (baudrate/2U))/baudrate);
 }
 
-void store_received_character() {
-	c_buff_push(bt_rx_buff, (UART_DATA_REG & 0xff));
+static void store_received_characters() {
+	char c;
+	while (UART_STATUS_REG & UART_REC_FLAG) {
+		c = (UART_DATA_REG & 0xff);
+		c_buff_push(bt_rx_buff, c);
+		if (c == 0)
+			bt_data_received = 1;
+	}
 }
 
 void UART_INT_FUN(void) {
-	char read = UART_DATA_REG;
-	c_buff_push(bt_rx_buff, read);
+	store_received_characters();
+}
+
+void bt_transmit_string(char * str) {
+	for (int i = 0; str[i] != 0; i++) {
+		bt_transmit_single_character(str[i]);
+	}
+}
+
+void bt_transmit_data() {
+	while (c_buff_is_empty(bt_tx_buff) == CBUF_NOT_EMPTY) {
+		bt_transmit_single_character(c_buff_pop(bt_tx_buff));
+	}
+	c_buff_flush(bt_tx_buff);
+	bt_transfer_ready = 0;
 }
 
 #ifdef __cplusplus

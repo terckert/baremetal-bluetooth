@@ -10,6 +10,7 @@
 
 #include "stm32f4xx.h"
 #include "circular_buffer.h"
+#include "systick_delays.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -24,9 +25,13 @@ typedef enum bt_setup{
 
 extern c_buffer bt_tx_buff;
 extern c_buffer bt_rx_buff;
+extern uint8_t bt_transfer_ready;
+extern uint8_t bt_data_received;
 
 void bt_uart_init(BT_Setup setup_mode);
 void bt_transmit_single_character(uint32_t ch);
+void bt_transmit_data();
+void bt_transmit_string(char * str);
 
 
 #ifdef __cplusplus

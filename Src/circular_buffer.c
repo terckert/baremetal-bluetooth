@@ -42,7 +42,8 @@ int8_t c_buff_peek(c_buffer b) {
 }
 
 void c_buff_flush(c_buffer b) {
-	b->tail = b->head;
+	b->tail = b->head = 0;
+	memset(b, 0, CIRCULAR_BUFFER_SIZE);
 }
 
 int c_buff_is_empty(c_buffer b) {
@@ -56,12 +57,7 @@ int c_buff_is_empty(c_buffer b) {
  * 		b: buffer variable to get contents from
  */
 char* c_buff_get_contents(c_buffer b) {
-	char *contents = calloc(sizeof(char), CIRCULAR_BUFFER_SIZE);
-	for (int i = 0; b->tail != b->head; i++) {
-		contents[i] = b->_c_buffer[b->tail];
-		b->tail = (b->tail + 1) % CIRCULAR_BUFFER_SIZE;
-	}
-	return contents;
+	return (char*)b->_c_buffer;
 }
 
 #ifdef __cplusplus

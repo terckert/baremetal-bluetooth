@@ -47,13 +47,58 @@ int main(){
 	debug_uart_init();
 	bt_uart_init(_normal);
 
+
+
+	// Clock to GPIO A, B, C
+	RCC->AHB1ENR |=  (1U << 0 | 1U << 1 | 1U << 2);
+
+	// Pin PA4 to output
+	GPIOA->MODER |=  (1U << 8);
+	GPIOA->MODER &= ~(1U << 9);
+
+	// Pin PB0 to output
+	GPIOB->MODER |=  (1U << 0);
+	GPIOB->MODER &= ~(1U << 1);
+
+	// Pins PC0, PC1 to output
+	GPIOC->MODER |=  (1U << 0 | 1U << 2);
+	GPIOC->MODER &= ~(1U << 1 | 1U << 3);
+
 	char console_in_buffer[CIRCULAR_BUFFER_SIZE];
+	char cmd[CIRCULAR_BUFFER_SIZE];
 	// Main loop.
 	while (1){
-		while (c_buff_is_empty(bt_tx_buff) == CBUF_NOT_EMPTY) {
-			bt_transmit_single_character(c_buff_pop(bt_tx_buff));
-		}
+		// BOARD LIGHT ORDER STARTING ON LEFT
+		// GPIOC->ODR ^=  (1U << 0); // PC0
+		// GPIOC->ODR ^=  (1U << 1); // PC1
+		// GPIOB->ODR ^=  (1U << 0); // PB0
+		// GPIOA->ODR ^=  (1U << 4); // PA4
 
+		if (bt_transfer_ready) {
+			bt_transmit_data();
+		}
+		if (bt_data_received){
+			strcpy(cmd, c_buff_get_contents(bt_rx_buff));
+			c_buff_flush(bt_rx_buff);
+			bt_data_received = 0;
+			DEBUG_PRINT("%s\r\n", cmd);
+			if (strcmp(cmd, "LIGHT1") == 0) {
+				GPIOC->ODR ^=  (1U << 0); // PC0
+				bt_transmit_string("OK");
+			} else if (strcmp(cmd, "LIGHT2") == 0) {
+				GPIOC->ODR ^=  (1U << 1); // PC1
+				bt_transmit_string("OK");
+			} else if (strcmp(cmd, "LIGHT3") == 0) {
+				GPIOB->ODR ^=  (1U << 0); // PB0
+				bt_transmit_string("OK");
+			} else if (strcmp(cmd, "LIGHT4") == 0) {
+				GPIOA->ODR ^=  (1U << 4); // PA4
+				bt_transmit_string("OK");
+			} else {
+				bt_transmit_string("Bad command.");
+			}
+
+		}
 	}
 }
 
@@ -123,4 +168,6 @@ int main(){
 void forward_user_input(char ch) {
 	if (ch != '\r')
 		c_buff_push(bt_tx_buff, ch);
+	else
+		bt_transfer_ready=1;
 }
