@@ -1,2 +1,2 @@
 eclipse.preferences.version=1
-sfrviewstate={"fFavorites"\:{"fLists"\:{}},"fProperties"\:{"fNodeProperties"\:{"STM32F411/RCC/AHB1ENR"\:{"fNodeProperties"\:{"autoupdate"\:"true"}}}}}
+sfrviewstate={"fFavorites"\:{"fLists"\:{}},"fProperties"\:{"fNodeProperties"\:{"STM32F411/RCC/AHB1ENR"\:{"fNodeProperties"\:{"autoupdate"\:"true"}},"STM32F411/GPIOA/ODR"\:{"fNodeProperties"\:{"autoupdate"\:"false"}},"STM32F411/USART1/SR"\:{"fNodeProperties"\:{"autoupdate"\:"true"}}}}}
